@@ -4,69 +4,29 @@ local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
-local games = workspace:WaitForChild("Games")
-local folders = {"10", "11"}
+local seat = workspace:WaitForChild("Games"):WaitForChild("10"):WaitForChild("Chairs"):WaitForChild("Chair2"):WaitForChild("Seat")
+local seat1 = workspace:WaitForChild("Games"):WaitForChild("10"):WaitForChild("Chairs"):WaitForChild("Chair1"):WaitForChild("Seat")
 
 local seated = false
 local timer = 0
 
-local function getSeats(folderName)
-    local chairs = games:WaitForChild(folderName):WaitForChild("Chairs")
-    local s2 = chairs:WaitForChild("Chair2"):WaitForChild("Seat")
-    local s1 = chairs:WaitForChild("Chair1"):WaitForChild("Seat")
-    return s2, s1
-end
-
-local function findWhereChair1Is()
-    for _, folderName in ipairs(folders) do
-        local ok, result = pcall(function()
-            local chairs = games:FindFirstChild(folderName) and games[folderName]:FindFirstChild("Chairs")
-            if chairs then
-                local c1 = chairs:FindFirstChild("Chair1")
-                if c1 then
-                    local s = c1:FindFirstChild("Seat")
-                    if s and s.Occupant ~= nil then
-                        return folderName
-                    end
-                end
-            end
-        end)
-        if ok and result then return result end
-    end
-    return nil
-end
-
-local function sitDown(seat)
+local function sitDown()
     rootPart.CFrame = seat.CFrame + Vector3.new(0, 0.5, 0)
 end
 
--- initial sit
-local function getInitialFolder()
-    local f = findWhereChair1Is()
-    return f or folders[1]
+local function chair1Occupied()
+    return seat1.Occupant ~= nil
 end
 
-local currentFolder = getInitialFolder()
-local currentSeat, currentSeat1 = getSeats(currentFolder)
-sitDown(currentSeat)
+sitDown()
 
 while task.wait(0.1) do
-    -- detect where chair1 person is and follow
-    local chair1Folder = findWhereChair1Is()
-    if chair1Folder and chair1Folder ~= currentFolder then
-        currentFolder = chair1Folder
-        currentSeat, currentSeat1 = getSeats(currentFolder)
-        sitDown(currentSeat)
-        seated = false
-        timer = 0
-    end
-
-    if humanoid.SeatPart == currentSeat then
+    if humanoid.SeatPart == seat then
         if not seated then
             seated = true
             timer = 0
         end
-        if currentSeat1.Occupant ~= nil then
+        if chair1Occupied() then
             timer = timer + 0.1
             if timer >= 14 then
                 game:GetService("TeleportService"):Teleport(game.PlaceId, LocalPlayer)
@@ -77,6 +37,6 @@ while task.wait(0.1) do
     else
         seated = false
         timer = 0
-        sitDown(currentSeat)
+        sitDown()
     end
 end
