@@ -4,16 +4,26 @@ local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local rootPart = character:WaitForChild("HumanoidRootPart")
 
-local seat = workspace:WaitForChild("Games"):WaitForChild("10"):WaitForChild("Chairs"):WaitForChild("Chair1"):WaitForChild("Seat")
+local games = workspace:WaitForChild("Games")
+local folders = {"10", "11"}
+local currentIndex = 1
 
-local function sitDown()
+local function getSeat(folderName)
+    return games:WaitForChild(folderName):WaitForChild("Chairs"):WaitForChild("Chair1"):WaitForChild("Seat")
+end
+
+local function sitDown(seat)
     rootPart.CFrame = seat.CFrame + Vector3.new(0, 0.5, 0)
 end
 
-sitDown()
+local currentSeat = getSeat(folders[currentIndex])
+sitDown(currentSeat)
 
 while task.wait(0.1) do
-    if humanoid.SeatPart ~= seat then
-        sitDown()
+    if humanoid.SeatPart ~= currentSeat then
+        -- swap to next folder
+        currentIndex = (currentIndex % #folders) + 1
+        currentSeat = getSeat(folders[currentIndex])
+        sitDown(currentSeat)
     end
 end
